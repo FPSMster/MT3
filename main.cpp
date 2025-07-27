@@ -379,27 +379,43 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
 {
-	const uint32_t kSubdivision = 10; // 分割数を増やす
+	const uint32_t kSubdivision = 12;
 	const float kLonEvery = float(M_PI) * 2.0f / kSubdivision; // 経度
 	const float kLatEvery = float(M_PI) / kSubdivision;        // 緯度
 
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++)
-	{
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
 		float lat = float(-M_PI) / 2.0f + kLatEvery * latIndex;
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++)
-		{
+
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
 			float lon = lonIndex * kLonEvery;
 
-			Vector3 a = { sphere.center.x + sphere.radius * std::cos(lat) * std::cos(lon), sphere.center.y + sphere.radius * std::sin(lat), sphere.center.z + sphere.radius * std::cos(lat) * std::sin(lon) };
-			Vector3 b = { sphere.center.x + sphere.radius * std::cos(lat + kLatEvery) * std::cos(lon), sphere.center.y + sphere.radius * std::sin(lat + kLatEvery), sphere.center.z + sphere.radius * std::cos(lat + kLatEvery) * std::sin(lon) };
-			Vector3 c = { sphere.center.x + sphere.radius * std::cos(lat) * std::cos(lon + kLonEvery), sphere.center.y + sphere.radius * std::sin(lat), sphere.center.z + sphere.radius * std::cos(lat) * std::sin(lon + kLonEvery) };
 
+			Vector3 a = {
+				sphere.center.x + sphere.radius * std::cos(lat) * std::cos(lon),
+				sphere.center.y + sphere.radius * std::sin(lat),
+				sphere.center.z + sphere.radius * std::cos(lat) * std::sin(lon)
+			};
+
+			Vector3 b = {
+				sphere.center.x + sphere.radius * std::cos(lat + kLatEvery) * std::cos(lon),
+				sphere.center.y + sphere.radius * std::sin(lat + kLatEvery),
+				sphere.center.z + sphere.radius * std::cos(lat + kLatEvery) * std::sin(lon)
+			};
+
+			Vector3 c = {
+				sphere.center.x + sphere.radius * std::cos(lat) * std::cos(lon + kLonEvery),
+				sphere.center.y + sphere.radius * std::sin(lat),
+				sphere.center.z + sphere.radius * std::cos(lat) * std::sin(lon + kLonEvery)
+			};
+
+			// ビュー変換・ビューポート変換
 			a = Transform(Transform(a, viewProjectionMatrix), viewportMatrix);
 			b = Transform(Transform(b, viewProjectionMatrix), viewportMatrix);
 			c = Transform(Transform(c, viewProjectionMatrix), viewportMatrix);
 
-			Novice::DrawLine(int(a.x), int(a.y), int(b.x), int(b.y), color);
-			Novice::DrawLine(int(b.x), int(b.y), int(c.x), int(c.y), color);
+			// 描画
+			Novice::DrawLine(int(a.x), int(a.y), int(b.x), int(b.y), color); // 緯度方向
+			Novice::DrawLine(int(a.x), int(a.y), int(c.x), int(c.y), color); // 経度方向
 		}
 	}
 }
