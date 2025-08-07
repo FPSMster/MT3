@@ -14,6 +14,10 @@ struct Matrix4x4 {
 
 struct Vector3{
 	float x, y, z;
+
+	Vector3 operator-(const Vector3& other) const {
+		return Vector3(x - other.x, y - other.y, z - other.z);
+	}
 };
 
 struct Sphere{
@@ -35,6 +39,8 @@ struct Segment{
 	Vector3 origin;
 	Vector3 diff;
 };
+
+uint32_t color_ = WHITE;
 
 Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
@@ -469,6 +475,10 @@ Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
 	return result;
 };
 
+float Dot(const Vector3& a, const Vector3& b) {
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 
 	const Vector3& a = segment.origin;
@@ -501,6 +511,25 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 };
 
 
+float Length(const Vector3& v) {
+	return std::sqrt(Dot(v, v));
+};
+
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+
+	float distance = Length(s2.center - s1.center);
+
+	if (distance <= s1.radius + s2.radius) {
+		
+		color_ = RED;
+
+		return true;
+	} else{
+		color_ = WHITE;
+		return false;
+	}
+};
+
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -518,7 +547,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	
-	Sphere sphere = { 0.0f,0.0f,1.0f,1.0f };
+	Sphere sphere1 = { 0.0f,0.0f,1.0f,1.0f };
+	Sphere sphere2 = { 2.0f,0.0f,1.0f,0.5f };
 
 	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
 
@@ -555,15 +585,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 end = Transform(Transform(Add(segment.origin,segment.diff),viewProjectionMatrix),viewportMatrix);
-
+		IsCollision(sphere1,sphere2);
 
 		ImGui::Begin("Window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("SphereCenter", &sphere1.center.x, 0.01f);
+		ImGui::DragFloat("SphereRadius", &sphere1.radius, 0.01f);
 		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 		ImGui::End();
 		
@@ -578,12 +606,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		DrawGrid(viewProjectionMatrix,viewportMatrix);
 
-		DrawSphere(pointSphere,viewProjectionMatrix,viewportMatrix,RED);
+		DrawSphere(sphere1,viewProjectionMatrix,viewportMatrix,color_);
 
-		DrawSphere(closestPointSphere,viewProjectionMatrix,viewportMatrix,BLACK);
+		DrawSphere(sphere2,viewProjectionMatrix,viewportMatrix,WHITE);
 
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
 		
+
 		///
 		/// ↑描画処理ここまで
 		///
