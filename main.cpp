@@ -42,6 +42,11 @@ struct Segment{
 
 uint32_t color_ = WHITE;
 
+struct Plane{
+	Vector3 normal;
+	float distance;
+};
+
 Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
 	result.m[0][0] = 1.0f/ tan(fovY/2)/ aspectRatio;
@@ -515,11 +520,14 @@ float Length(const Vector3& v) {
 	return std::sqrt(Dot(v, v));
 };
 
-bool IsCollision(const Sphere& s1, const Sphere& s2) {
+bool IsCollision(const Sphere& sphere, const Plane& plane) {
 
-	float distance = Length(s2.center - s1.center);
+	// 球の中心から平面までの距離
+	float distance = sphere.center.x * plane.normal.x +
+		sphere.center.y * plane.normal.y +
+		sphere.center.z * plane.normal.z - plane.distance;
 
-	if (distance <= s1.radius + s2.radius) {
+	if (std::abs(distance) <= sphere.radius) {
 		
 		color_ = RED;
 
@@ -529,6 +537,67 @@ bool IsCollision(const Sphere& s1, const Sphere& s2) {
 		return false;
 	}
 };
+
+Vector3 Vec3Multiply(const Vector3& v, float scalar)
+{
+	return { v.x * scalar, v.y * scalar, v.z * scalar };
+}
+
+Vector3 Normalize(const Vector3& v)
+{
+	float len = Length(v);
+	if (len == 0.0f)
+	{
+		return { 0.0f, 0.0f, 0.0f };
+	}
+	return Vec3Multiply(v, 1.0f / len);
+}
+
+Vector3 Perpendicular(const Vector3& vector) {
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y, vector.x, 0.0f };
+	}
+	return { 0.0f, -vector.z, vector.y };
+}
+
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
+	Vector3 center = Vec3Multiply( plane.normal,plane.distance);
+
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal)); 
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z }; 
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]); 
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z }; 
+
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index) {
+		Vector3 extend = Vec3Multiply(perpendiculars[index], 2.0f);
+		Vector3 point = Add(center, extend);
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	// 平面の描画
+	Novice::DrawLine(
+		static_cast<int>(points[0].x),
+		static_cast<int>(points[0].y),
+		static_cast<int>(points[2].x),
+		static_cast<int>(points[2].y), color);
+	Novice::DrawLine(
+		static_cast<int>(points[1].x),
+		static_cast<int>(points[1].y),
+		static_cast<int>(points[2].x),
+		static_cast<int>(points[2].y), color);
+	Novice::DrawLine(
+		static_cast<int>(points[1].x),
+		static_cast<int>(points[1].y),
+		static_cast<int>(points[3].x),
+		static_cast<int>(points[3].y), color);
+	Novice::DrawLine(
+		static_cast<int>(points[3].x),
+		static_cast<int>(points[3].y),
+		static_cast<int>(points[0].x),
+		static_cast<int>(points[0].y), color);
+}
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -562,6 +631,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Sphere closestPointSphere{ closestPoint,0.01f };
 
+	Plane plane{ 
+		.normal = {0.0f,1.0f,0.0f},
+		.distance=0.0f
+	};
 	
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -585,7 +658,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		IsCollision(sphere1,sphere2);
+		IsCollision(sphere1,plane);
 
 		ImGui::Begin("Window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
@@ -593,8 +666,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("SphereCenter", &sphere1.center.x, 0.01f);
 		ImGui::DragFloat("SphereRadius", &sphere1.radius, 0.01f);
 		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
 		ImGui::End();
 		
+		plane.normal = Normalize(plane.normal);
 
 		///
 		/// ↑更新処理ここまで
@@ -608,7 +683,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawSphere(sphere1,viewProjectionMatrix,viewportMatrix,color_);
 
-		DrawSphere(sphere2,viewProjectionMatrix,viewportMatrix,WHITE);
+		DrawPlane(plane,viewProjectionMatrix,viewportMatrix,WHITE);
 
 		
 
