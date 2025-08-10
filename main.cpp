@@ -786,6 +786,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 		
+
 		ImGui::Begin("Window");
 		ImGui::Text("c: %f, %f, %f", c.x, c.y, c.z);
 		ImGui::Text("d: %f, %f, %f", d.x, d.y, d.z);
