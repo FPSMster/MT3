@@ -13,49 +13,32 @@ const char kWindowTitle[] = "GC2C_04_クドウ_マコト";
 
 struct Matrix4x4 {
 	float m[4][4];
-
-	Matrix4x4 operator*(const Matrix4x4& other) const {
-		Matrix4x4 result{};
-		for (int i = 0; i < 4; ++i)
-			for (int j = 0; j < 4; ++j)
-				for (int k = 0; k < 4; ++k)
-					result.m[i][j] += m[i][k] *other.m[k][j];
-		return result;
-	}
 };
 
-struct Vector3{
+struct Vector3 {
 	float x, y, z;
-
-	Vector3 operator+(const Vector3& other) const {
-		return Vector3(x + other.x, y + other.y, z + other.z);
-	}
 
 	Vector3 operator-(const Vector3& other) const {
 		return Vector3(x - other.x, y - other.y, z - other.z);
 	}
-
-	Vector3 operator+(const float other) const {
-		return Vector3(x + other, y + other, z + other);
-	}
 };
 
-struct Sphere{
+struct Sphere {
 	Vector3 center;
 	float radius;
 };
 
-struct Line{
+struct Line {
 	Vector3 origin;
 	Vector3 diff;
 };
 
-struct Ray{
+struct Ray {
 	Vector3 origin;
 	Vector3 diff;
 };
 
-struct Segment{
+struct Segment {
 	Vector3 origin;
 	Vector3 diff;
 
@@ -66,41 +49,41 @@ struct Segment{
 
 uint32_t color_ = WHITE;
 
-struct Plane{
+struct Plane {
 	Vector3 normal;
 	float distance;
 };
 
-struct Triangle{
+struct Triangle {
 	Vector3 vertices[3];
 };
 
-struct AABB{
+struct AABB {
 	Vector3 min;
 	Vector3 max;
 };
 
 Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 result;
-	result.m[0][0] = 1.0f/ tan(fovY/2)/ aspectRatio;
-	result.m[0][1]=0.0f;
-	result.m[0][2]=0.0f;
-	result.m[0][3]=0.0f;
+	result.m[0][0] = 1.0f / tan(fovY / 2) / aspectRatio;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
 
-	result.m[1][0]=0.0f;
-	result.m[1][1]= 1.0f/tan(fovY/2);
-	result.m[1][2]=0.0f;
-	result.m[1][3]=0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 1.0f / tan(fovY / 2);
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
 
-	result.m[2][0]=0.0f;
-	result.m[2][1]=0.0f;
-	result.m[2][2]=farClip/(farClip-nearClip);
-	result.m[2][3]=1.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = farClip / (farClip - nearClip);
+	result.m[2][3] = 1.0f;
 
-	result.m[3][0]=0.0f;
-	result.m[3][1]=0.0f;
-	result.m[3][2]=- nearClip * farClip / (farClip - nearClip);
-	result.m[3][3]=0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = -nearClip * farClip / (farClip - nearClip);
+	result.m[3][3] = 0.0f;
 
 	return result;
 }
@@ -186,6 +169,7 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	};
 	return result;
 };
+
 
 Matrix4x4 Multiply(const  Matrix4x4& m1, const  Matrix4x4& m2) {
 	Matrix4x4 result;
@@ -287,7 +271,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	Matrix4x4 result;
 
 	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
-	
+
 	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
 	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
 	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
@@ -374,7 +358,7 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 		for (int columm = 0; columm < 4; ++columm)
 		{
 			Novice::ScreenPrintf(
-				x + columm * kColummWidth, y + (row+1) * kRowHeight, "%6.02f", matrix.m[row][columm]);
+				x + columm * kColummWidth, y + (row + 1) * kRowHeight, "%6.02f", matrix.m[row][columm]);
 		}
 	}
 	Novice::ScreenPrintf(x, y, "%s", label);
@@ -480,7 +464,7 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 }
 
 Vector3 Project(const Vector3& v1, const Vector3& v2) {
-	
+
 	float dot = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 
 	float length = v2.x * v2.x + v2.y * v2.y + v2.z * v2.z;
@@ -522,19 +506,19 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 
 	Vector3 b = Add(segment.origin, segment.diff);
 
-	Vector3 ab = {b.x-a.x,b.y-a.y,b.z-a.z};
+	Vector3 ab = { b.x - a.x,b.y - a.y,b.z - a.z };
 
-	Vector3 ap = {point.x-a.x,point.y-a.y,point.z-a.z};
+	Vector3 ap = { point.x - a.x,point.y - a.y,point.z - a.z };
 
 	float abLenSq = ab.x * ab.x + ab.y * ab.y + ab.z * ab.z;
 
-	if (abLenSq==0.0f){
+	if (abLenSq == 0.0f) {
 		return a;
 	}
 
-	float t= (ab.x * ab.x + ab.y * ab.y + ab.z * ab.z)/abLenSq;
+	float t = (ab.x * ab.x + ab.y * ab.y + ab.z * ab.z) / abLenSq;
 
-	if (t<0.0f){
+	if (t < 0.0f) {
 		t = 0.0f;
 	}
 
@@ -567,7 +551,7 @@ Vector3 Normalize(const Vector3& v)
 	return Vec3Multiply(v, 1.0f / len);
 }
 
-bool IsCollision(const AABB& aabb1, const Segment&segment ) {
+bool IsCollision(const AABB& aabb1, const Segment& segment) {
 
 	Vector3 b = {
 			segment.diff.x - segment.origin.x,
@@ -616,13 +600,13 @@ Vector3 Perpendicular(const Vector3& vector) {
 }
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-	Vector3 center = Vec3Multiply( plane.normal,plane.distance);
+	Vector3 center = Vec3Multiply(plane.normal, plane.distance);
 
 	Vector3 perpendiculars[4];
-	perpendiculars[0] = Normalize(Perpendicular(plane.normal)); 
-	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z }; 
-	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]); 
-	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z }; 
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z };
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z };
 
 	Vector3 points[4];
 	for (int32_t index = 0; index < 4; ++index) {
@@ -656,10 +640,10 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjecttionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
 	Vector3 transformVertices[3] =
-	{ 
-	    Transform(Transform(triangle.vertices[0],viewProjecttionMatrix),viewportMatrix),
-        Transform(Transform(triangle.vertices[1],viewProjecttionMatrix),viewportMatrix),
-        Transform(Transform(triangle.vertices[2],viewProjecttionMatrix),viewportMatrix)
+	{
+		Transform(Transform(triangle.vertices[0],viewProjecttionMatrix),viewportMatrix),
+		Transform(Transform(triangle.vertices[1],viewProjecttionMatrix),viewportMatrix),
+		Transform(Transform(triangle.vertices[2],viewProjecttionMatrix),viewportMatrix)
 	};
 
 	Novice::DrawTriangle(
@@ -707,9 +691,9 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
 Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	Vector3 result;
 
-	result.x= std::lerp(v1.x, v2.x, t);
-	result.y= std::lerp(v1.y, v2.y, t);
-	result.z= std::lerp(v1.z, v2.z, t);
+	result.x = std::lerp(v1.x, v2.x, t);
+	result.y = std::lerp(v1.y, v2.y, t);
+	result.z = std::lerp(v1.z, v2.z, t);
 
 	return result;
 	//return Add(v1, Vec3Multiply(Subtract(v2, v1), t));
@@ -737,8 +721,8 @@ void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, cons
 
 		Vector3 p2 = Lerp(p0p1_, p1p2_, t2);
 
-		p=Transform(p, vp);
-		p2=Transform(p2, vp);
+		p = Transform(p, vp);
+		p2 = Transform(p2, vp);
 
 		/*Transform(Transform(p, viewProjectionMatrix), viewportMatrix);
 		Transform(Transform(p2, viewProjectionMatrix), viewportMatrix);*/
@@ -746,7 +730,7 @@ void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, cons
 		Novice::DrawLine(int(p.x), int(p.y), int(p2.x), int(p2.y), color);
 	}
 
-	
+
 };
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -759,19 +743,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};	
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
-	Vector3 a{ 0.2f,1.0f,0.0f };
-	Vector3 b{ 2.4f,3.1f,1.2f };
-	Vector3 c = a + b;
-	Vector3 d = a - b;
-	Vector3 e = a + 2.4f;
-	Vector3 rotate{ 0.4f,1.43f,-0.8f };
-	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-	Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
+	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
+	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
+
+	Vector3 translates[3] = {
+		{0.2f,1.0f,0.0f},
+		{0.4f,0.0f,0.0f},
+		{0.3f,0.0f,0.0f}
+	};
+
+	Vector3 rotates[3] = {
+		{0.0f,0.0f,-6.8f},
+		{0.0f,0.0f,-1.4f},
+		{0.0f,0.0f,0.0f}
+	};
+
+	Vector3 scales[3] = {
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f}
+	};
+
+	Segment segment{
+		.origin{-0.7f,0.3f,-0.0f},
+		.diff{2.0f,-0.5f,0.0f}
+	};
+
+	AABB aabb1
+	{
+		.min{-0.5f,-0.5f,-0.5f},
+		.max{0.0f,0.0f,0.0f},
+	};
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -785,21 +791,53 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-		
+
+
+		Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
+		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+		Matrix4x4 projectionMatrix = MakePerspectiveForMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
+		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+
+		Matrix4x4 shoulderMatrix = MakeAffineMatrix(scales[0], rotates[0], translates[0]);
+		Matrix4x4 elbowMatrixLocal = MakeAffineMatrix(scales[1], rotates[1], translates[1]);
+		Matrix4x4 wristMatrixLocal = MakeAffineMatrix(scales[2], rotates[2], translates[2]);
+
+		Matrix4x4 elbowMatrix = Multiply(elbowMatrixLocal, shoulderMatrix);
+		Matrix4x4 wristMatrix = Multiply(wristMatrixLocal, elbowMatrix);
+
+		Sphere shoulderSphere = { Transform({0, 0, 0}, shoulderMatrix), 0.05f };
+		Sphere elbowSphere = { Transform({0, 0, 0}, elbowMatrix),    0.05f };
+		Sphere wristSphere = { Transform({0, 0, 0}, wristMatrix),    0.05f };
+
+		Vector3 shoulderPos = Transform({ 0, 0, 0 }, shoulderMatrix);
+		Vector3 elbowPos = Transform({ 0, 0, 0 }, elbowMatrix);
+		Vector3 wristPos = Transform({ 0, 0, 0 }, wristMatrix);
+
+		shoulderPos = Transform(Transform(shoulderPos, viewProjectionMatrix), viewportMatrix);
+		elbowPos = Transform(Transform(elbowPos, viewProjectionMatrix), viewportMatrix);
+		wristPos = Transform(Transform(wristPos, viewProjectionMatrix), viewportMatrix);
+
+		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+
+		IsCollision(aabb1, segment);
+
 		ImGui::Begin("Window");
-		ImGui::Text("c: %f, %f, %f", c.x, c.y, c.z);
-		ImGui::Text("d: %f, %f, %f", d.x, d.y, d.z);
-		ImGui::Text("e: %f, %f, %f", e.x, e.y, e.z);
-		ImGui::Text(
-			"matrix:\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n",
-			rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], rotateMatrix.m[0][3],
-			rotateMatrix.m[1][0], rotateMatrix.m[1][1], rotateMatrix.m[1][2], rotateMatrix.m[1][3],
-			rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3],
-			rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], rotateMatrix.m[3][3]);
+		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
+		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
+		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
+		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
+		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
+		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
+		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
+		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
+		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
 		ImGui::End();
 
-		
-		
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -807,10 +845,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-		
-	
 
-		
+		DrawGrid(viewProjectionMatrix, viewportMatrix);
+
+		DrawSphere(shoulderSphere, viewProjectionMatrix, viewportMatrix, RED);
+		DrawSphere(elbowSphere, viewProjectionMatrix, viewportMatrix, GREEN);
+		DrawSphere(wristSphere, viewProjectionMatrix, viewportMatrix, BLUE);
+
+		Novice::DrawLine((int)shoulderPos.x, (int)shoulderPos.y, (int)elbowPos.x, (int)elbowPos.y, WHITE);
+		Novice::DrawLine((int)elbowPos.x, (int)elbowPos.y, (int)wristPos.x, (int)wristPos.y, WHITE);
+
 		///
 		/// ↑描画処理ここまで
 		///
